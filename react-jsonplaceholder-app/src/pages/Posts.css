@@ -9,6 +9,14 @@
   .posts-layout {
     grid-template-columns: 350px 1fr;
   }
+
+  .post-detail-section {
+    position: sticky;
+    top: 2rem;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    padding-right: 0.5rem;
+  }
 }
 
 .add-post-card {
@@ -136,4 +144,23 @@
 
 .add-comment-form input:focus {
   border-color: var(--primary);
+}
+
+@media (min-width: 900px) {
+  .post-detail-section {
+    position: sticky;
+    top: 2rem;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    padding-right: 0.5rem;
+  }
+  
+  /* Scrollbar styling for a cleaner look */
+  .post-detail-section::-webkit-scrollbar {
+    width: 6px;
+  }
+  .post-detail-section::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 4px;
+  }
 }

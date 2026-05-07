@@ -28,7 +28,8 @@ function AppRoutes() {
       <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route path="home" element={<Home />} />
         <Route path="todos" element={<Todos />} />
-        <Route path="posts/*" element={<Posts />} />
+        <Route path="posts/*" element={<Posts mode="my" />} />
+        <Route path="all-posts/*" element={<Posts mode="all" />} />
         <Route path="albums/*" element={<Albums />} />
       </Route>
     </Routes>

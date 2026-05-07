@@ -40,34 +40,34 @@ const AlbumsList = () => {
     } catch (err) { console.error(err); }
   };
 
-  const filteredAlbums = albums.filter(a => 
-    a.title.toLowerCase().includes(search.toLowerCase()) || 
+  const filteredAlbums = albums.filter(a =>
+    a.title.toLowerCase().includes(search.toLowerCase()) ||
     a.id.toString().includes(search)
   );
 
   return (
     <div className="albums-list-view">
-      <div className="card add-album-card" style={{marginBottom: '1.5rem'}}>
-        <form onSubmit={handleAddAlbum} style={{display: 'flex', gap: '1rem'}}>
-          <input 
-            type="text" 
-            placeholder="New Album Title..." 
+      <div className="card add-album-card" style={{ marginBottom: '1.5rem' }}>
+        <form onSubmit={handleAddAlbum} style={{ display: 'flex', gap: '1rem' }}>
+          <input
+            type="text"
+            placeholder="New Album Title..."
             value={newAlbumTitle}
             onChange={e => setNewAlbumTitle(e.target.value)}
-            style={{flex: 1, padding: '0.75rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)'}}
+            style={{ flex: 1, padding: '0.75rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}
           />
-          <button type="submit" className="btn btn-primary"><Plus size={18}/> Create</button>
+          <button type="submit" className="btn btn-primary"><Plus size={18} /> Create</button>
         </form>
       </div>
 
-      <div className="card search-card" style={{marginBottom: '1.5rem'}}>
-         <input 
-            type="text" 
-            placeholder="Search albums by ID or Title..." 
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{width: '100%', padding: '0.75rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)'}}
-          />
+      <div className="card search-card" style={{ marginBottom: '1.5rem' }}>
+        <input
+          type="text"
+          placeholder="Search albums by ID or Title..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}
+        />
       </div>
 
       {loading ? <div className="loader"></div> : (
@@ -112,10 +112,14 @@ const AlbumDetail = () => {
   const fetchPhotos = async (id, pageNum) => {
     try {
       setLoadingPhotos(true);
-      const data = await apiFetch(`http://localhost:5000/photos?albumId=${id}&_page=${pageNum}&_limit=12`);
-      if (data.length < 12) setHasMore(false);
-      
-      setPhotos(prev => pageNum === 1 ? data : [...prev, ...data]);
+      const data = await apiFetch(`http://localhost:5000/photos?albumId=${id}&_page=${pageNum}&_per_page=12`);
+
+      // json-server v1 pagination returns { data: [], items: ... }
+      const fetchedPhotos = Array.isArray(data) ? data : (data.data || []);
+
+      if (fetchedPhotos.length < 12) setHasMore(false);
+
+      setPhotos(prev => pageNum === 1 ? fetchedPhotos : [...prev, ...fetchedPhotos]);
     } catch (err) { console.error(err); }
     finally { setLoadingPhotos(false); }
   };
@@ -130,8 +134,11 @@ const AlbumDetail = () => {
     e.preventDefault();
     if (!newPhoto.title || !newPhoto.url) return;
     try {
+      // If albumId is fully numeric, parse it. Otherwise, keep it as string.
+      const parsedAlbumId = /^\d+$/.test(albumId) ? Number(albumId) : albumId;
+
       const photoData = {
-        albumId: albumId,
+        albumId: parsedAlbumId,
         title: newPhoto.title,
         url: newPhoto.url,
         thumbnailUrl: newPhoto.url
@@ -166,33 +173,25 @@ const AlbumDetail = () => {
 
   return (
     <div className="album-detail-view">
-      <button className="btn" style={{marginBottom: '1rem', border: '1px solid var(--border)'}} onClick={() => navigate('..')}>
+      <button className="btn" style={{ marginBottom: '1rem', border: '1px solid var(--border)' }} onClick={() => navigate('..')}>
         &larr; Back to Albums
       </button>
-      
+
       {album && (
-        <div className="card" style={{marginBottom: '1.5rem'}}>
-          <h2 style={{color: 'var(--primary)'}}>{album.title}</h2>
-          <p style={{color: 'var(--text-muted)', fontSize: '0.875rem'}}>Album ID: #{album.id}</p>
+        <div className="card" style={{ marginBottom: '1.5rem' }}>
+          <h2 style={{ color: 'var(--primary)' }}>{album.title}</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Album ID: #{album.id}</p>
         </div>
       )}
 
-      {photos.length > 0 ? (
-        <div className="card add-photo-card" style={{marginBottom: '1.5rem'}}>
-          <h3 style={{marginBottom: '1rem'}}>Add Photo</h3>
-          <form onSubmit={handleAddPhoto} className="add-photo-form">
-            <input type="text" placeholder="Title" value={newPhoto.title} onChange={e => setNewPhoto({...newPhoto, title: e.target.value})} />
-            <input type="url" placeholder="Image URL" value={newPhoto.url} onChange={e => setNewPhoto({...newPhoto, url: e.target.value})} />
-            <button type="submit" className="btn btn-primary"><Plus size={18}/> Add</button>
-          </form>
-        </div>
-      ) : (
-        !loadingPhotos && (
-          <div className="card" style={{marginBottom: '1.5rem', backgroundColor: 'var(--bg-secondary)'}}>
-            <p style={{color: 'var(--text-muted)'}}>As per requirements, you cannot add new photos to an empty album.</p>
-          </div>
-        )
-      )}
+      <div className="card add-photo-card" style={{ marginBottom: '1.5rem' }}>
+        <h3 style={{ marginBottom: '1rem' }}>Add Photo</h3>
+        <form onSubmit={handleAddPhoto} className="add-photo-form">
+          <input type="text" placeholder="Title" value={newPhoto.title} onChange={e => setNewPhoto({ ...newPhoto, title: e.target.value })} />
+          <input type="text" placeholder="Image URL" value={newPhoto.url} onChange={e => setNewPhoto({ ...newPhoto, url: e.target.value })} />
+          <button type="submit" className="btn btn-primary"><Plus size={18} /> Add</button>
+        </form>
+      </div>
 
       <div className="photos-grid">
         {photos.map(photo => (
@@ -215,9 +214,9 @@ const AlbumDetail = () => {
           </div>
         ))}
       </div>
-      
-      {loadingPhotos && <div className="loader" style={{margin: '1rem auto'}}></div>}
-      
+
+      {loadingPhotos && <div className="loader" style={{ margin: '1rem auto' }}></div>}
+
       {!loadingPhotos && hasMore && (
         <div className="load-more-container">
           <button className="btn btn-primary" onClick={loadMorePhotos}>
