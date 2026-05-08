@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect} from 'react';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../utils/api';
 import { Trash2, Plus, Check } from 'lucide-react';
@@ -16,21 +16,23 @@ const Todos = () => {
 
   const [newTodoTitle, setNewTodoTitle] = useState('');
 
+  
   useEffect(() => {
-    fetchTodos();
-  }, [user.id]);
+    if (!user?.id) return;
 
-  const fetchTodos = async () => {
-    try {
-      setLoading(true);
-      const data = await apiFetch(`http://localhost:5000/todos?userId=${user.id}`);
-      setTodos(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const getData = async () => {
+      try {
+        const data = await apiFetch(`http://localhost:5000/todos?userId=${user.id}`);
+        setTodos(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false); 
+      }
+    };
+
+    getData();
+  }, [user?.id]); 
 
   const handleAddTodo = async (e) => {
     e.preventDefault();

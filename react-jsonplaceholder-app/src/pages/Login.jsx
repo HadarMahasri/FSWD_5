@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogIn } from 'lucide-react';
 
 const Login = () => {
   const [username, setUsername] = useState('');
-  const [website, setWebsite] = useState(''); // Used as password
+  const [website, setWebsite] = useState(''); // Used as website
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -44,17 +44,17 @@ const Login = () => {
               id="username" 
               value={username} 
               onChange={(e) => setUsername(e.target.value)} 
-              placeholder="e.g. Bret"
+              placeholder="Enter your username"
             />
           </div>
           <div className="input-group">
-            <label htmlFor="website">Password (Website)</label>
+            <label htmlFor="website">Password</label>
             <input 
-              type="password" 
+              type="website" 
               id="website" 
               value={website} 
               onChange={(e) => setWebsite(e.target.value)} 
-              placeholder="e.g. hildegard.org"
+              placeholder="Enter your password"
             />
           </div>
           {error && <div className="error-msg">{error}</div>}

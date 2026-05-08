@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, ListTodo, FileText, Image as ImageIcon, Info, Home as HomeIcon } from 'lucide-react';
+import { LogOut, ListTodo, FileText, Image as ImageIcon, Home as HomeIcon, User } from 'lucide-react';
 import './Layout.css';
 
 const Layout = () => {
@@ -18,7 +18,7 @@ const Layout = () => {
     <div className="app-layout">
       <nav className="sidebar">
         <div className="sidebar-header">
-          <h2>ReactJSON</h2>
+          <h2>Task Gallery</h2>
           <p className="user-greeting">Welcome, {user?.name}</p>
         </div>
         <ul className="nav-links">
@@ -26,11 +26,6 @@ const Layout = () => {
             <NavLink to="/home" className={({isActive}) => isActive ? 'active' : ''}>
               <HomeIcon size={20} /> Home
             </NavLink>
-          </li>
-          <li>
-            <button onClick={() => setShowInfo(true)} className="nav-link-btn">
-              <Info size={20} /> Info
-            </button>
           </li>
           <li>
             <NavLink to="/todos" className={({isActive}) => isActive ? 'active' : ''}>
@@ -47,6 +42,11 @@ const Layout = () => {
               <ImageIcon size={20} /> Albums
             </NavLink>
           </li>
+          <li>
+            <button onClick={() => setShowInfo(true)} className="nav-link-btn" style={{ marginTop: '37px'}}>
+              <User size={20} /> Info
+            </button>
+          </li>
         </ul>
         <div className="sidebar-footer">
           <button onClick={handleLogout} className="btn btn-danger" style={{width: '100%'}}>
@@ -54,6 +54,7 @@ const Layout = () => {
           </button>
         </div>
       </nav>
+
 
       <main className="main-content">
         <Outlet />

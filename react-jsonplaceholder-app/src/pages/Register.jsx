@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { UserPlus } from 'lucide-react';
@@ -7,16 +7,15 @@ const Register = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     username: '',
-    website: '', // Using website as password for consistency
+    website: '', // Using website for consistency
     verifyWebsite: '',
     name: '',
     email: '',
     phone: '',
-    company: { name: '' }
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, checkUserExists } = useAuth();
   const navigate = useNavigate();
 
   const handleNext = async (e) => {
@@ -35,15 +34,14 @@ const Register = () => {
     
     setLoading(true);
     try {
-      const checkRes = await fetch(`http://localhost:5000/users?username=${formData.username}`);
-      const existingUsers = await checkRes.json();
-      if (existingUsers.length > 0) {
+      const exists = await checkUserExists(formData.username);
+      if (exists) {
         setError('Username already exists');
         setLoading(false);
         return;
       }
       setStep(2);
-    } catch (err) {
+    } catch {
       setError('Server connection failed');
     }
     setLoading(false);
@@ -59,7 +57,8 @@ const Register = () => {
     }
 
     setLoading(true);
-    const { verifyWebsite, ...dataToSave } = formData;
+    const dataToSave = { ...formData }; 
+    delete dataToSave.verifyWebsite;   // Remove verifyWebsite before sending to server
     const res = await register(dataToSave);
     
     if (res.success) {
@@ -88,7 +87,7 @@ const Register = () => {
               />
             </div>
             <div className="input-group">
-              <label htmlFor="website">Password (Website)</label>
+              <label htmlFor="website">Password</label>
               <input 
                 type="password" 
                 id="website" 
@@ -137,15 +136,6 @@ const Register = () => {
                 id="phone" 
                 value={formData.phone} 
                 onChange={(e) => setFormData({...formData, phone: e.target.value})} 
-              />
-            </div>
-            <div className="input-group">
-              <label htmlFor="company">Company Name</label>
-              <input 
-                type="text" 
-                id="company" 
-                value={formData.company.name} 
-                onChange={(e) => setFormData({...formData, company: {name: e.target.value}})} 
               />
             </div>
             {error && <div className="error-msg">{error}</div>}
