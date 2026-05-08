@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate, useParams, useLocation, useMatch } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../utils/api';
@@ -16,11 +16,17 @@ const PostDetail = ({ posts, updatePost }) => {
   const [loadingComments, setLoadingComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [showComments, setShowComments] = useState(false);
+  const detailRef = useRef(null);
 
   useEffect(() => {
     // Reset comments view when selecting a different post
     setShowComments(false);
     setComments([]);
+
+    // On mobile, scroll to the details section when a post is selected
+    if (detailRef.current && window.innerWidth < 900) {
+      detailRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }, [selectedPost?.id]);
 
   const handleToggleComments = () => {
@@ -33,8 +39,8 @@ const PostDetail = ({ posts, updatePost }) => {
   const fetchComments = async (id) => {
     try {
       setLoadingComments(true);
-      const data = await apiFetch(`http://localhost:5000/comments?postId=${id}`);
-      setComments(data);
+      const data = await apiFetch(`http://localhost:5000/comments`);
+      setComments(data.filter(c => String(c.postId) === String(id)));
     } catch (err) { console.error(err); } 
     finally { setLoadingComments(false); }
   };
@@ -80,7 +86,7 @@ const PostDetail = ({ posts, updatePost }) => {
   if (!selectedPost) return <div className="loader" style={{margin: '2rem auto'}}></div>;
 
   return (
-    <div className="post-detail-section">
+    <div className="post-detail-section" ref={detailRef}>
       <div className="card full-post" style={{marginBottom: '1.5rem'}}>
         <h2 style={{color: 'var(--primary)', marginBottom: '0.5rem'}}>{selectedPost.title}</h2>
         <div className="post-meta" style={{fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem'}}>
@@ -88,10 +94,12 @@ const PostDetail = ({ posts, updatePost }) => {
         </div>
         <div className="post-body" style={{position: 'relative'}}>
           <p style={{whiteSpace: 'pre-wrap'}}>{selectedPost.body}</p>
-          <button className="btn-icon" style={{position: 'absolute', top: 0, right: 0}} onClick={() => {
-            const newBody = prompt('Edit content:', selectedPost.body);
-            if (newBody) updatePost(selectedPost.id, {body: newBody});
-          }}><Edit2 size={16}/></button>
+          {selectedPost.userId === user.id && (
+            <button className="btn-icon" style={{position: 'absolute', top: 0, right: 0}} onClick={() => {
+              const newBody = prompt('Edit content:', selectedPost.body);
+              if (newBody) updatePost(selectedPost.id, {body: newBody});
+            }}><Edit2 size={16}/></button>
+          )}
         </div>
       </div>
 
@@ -151,7 +159,7 @@ const PostDetail = ({ posts, updatePost }) => {
   );
 };
 
-const Posts = () => {
+const Posts = ({ mode = 'my' }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -163,12 +171,15 @@ const Posts = () => {
 
   useEffect(() => {
     fetchPosts();
-  }, [user.id]);
+  }, [user.id, mode]);
 
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const data = await apiFetch(`http://localhost:5000/posts?userId=${user.id}`);
+      const url = mode === 'all' 
+        ? 'http://localhost:5000/posts' 
+        : `http://localhost:5000/posts?userId=${user.id}`;
+      const data = await apiFetch(url);
       setPosts(data);
     } catch (error) { console.error(error); } 
     finally { setLoading(false); }
@@ -214,37 +225,41 @@ const Posts = () => {
     p.id.toString().includes(search)
   );
 
+  const basePath = mode === 'all' ? '/all-posts' : '/posts';
+
   return (
     <div className="posts-page">
       <div className="page-header">
-        <h1>My Posts</h1>
+        <h1>{mode === 'all' ? 'All Posts' : 'My Posts'}</h1>
       </div>
 
       <div className="posts-layout">
         <div className="posts-list-section">
-          <div className="card add-post-card">
-            <h3>Add New Post</h3>
-            <form onSubmit={handleAddPost}>
-              <div className="input-group">
-                <input 
-                  type="text" 
-                  placeholder="Post Title" 
-                  value={newPost.title} 
-                  onChange={e => setNewPost({...newPost, title: e.target.value})} 
-                />
-              </div>
-              <div className="input-group">
-                <textarea 
-                  placeholder="Post Content" 
-                  value={newPost.body}
-                  onChange={e => setNewPost({...newPost, body: e.target.value})}
-                  rows={3}
-                  className="post-textarea"
-                />
-              </div>
-              <button className="btn btn-primary"><Plus size={18} /> Add Post</button>
-            </form>
-          </div>
+          {mode === 'my' && (
+            <div className="card add-post-card">
+              <h3>Add New Post</h3>
+              <form onSubmit={handleAddPost}>
+                <div className="input-group">
+                  <input 
+                    type="text" 
+                    placeholder="Post Title" 
+                    value={newPost.title} 
+                    onChange={e => setNewPost({...newPost, title: e.target.value})} 
+                  />
+                </div>
+                <div className="input-group">
+                  <textarea 
+                    placeholder="Post Content" 
+                    value={newPost.body}
+                    onChange={e => setNewPost({...newPost, body: e.target.value})}
+                    rows={3}
+                    className="post-textarea"
+                  />
+                </div>
+                <button className="btn btn-primary"><Plus size={18} /> Add Post</button>
+              </form>
+            </div>
+          )}
 
           <div className="card search-card" style={{marginBottom: '1.5rem'}}>
             <div className="input-group" style={{marginBottom: 0}}>
@@ -265,22 +280,26 @@ const Posts = () => {
                   <li 
                     key={post.id} 
                     className={`card post-item ${isSelected ? 'selected' : ''}`}
-                    onClick={() => navigate(`${post.id}/comments`, { state: { post } })}
+                    onClick={() => navigate(`${basePath}/${post.id}/comments`, { state: { post } })}
                   >
                     <div className="post-item-header">
                       <span className="post-id">#{post.id}</span>
                       <h4 className="post-title">{post.title}</h4>
                     </div>
                     <div className="post-actions" onClick={e => e.stopPropagation()}>
-                      <button className="btn-icon" onClick={() => {
-                         const newTitle = prompt('Edit Title:', post.title);
-                         if(newTitle) updatePost(post.id, {title: newTitle});
-                      }}>
-                        <Edit2 size={16} />
-                      </button>
-                      <button className="btn-icon delete-btn" onClick={() => deletePost(post.id)}>
-                        <Trash2 size={16} />
-                      </button>
+                      {post.userId === user.id && (
+                        <>
+                          <button className="btn-icon" onClick={() => {
+                             const newTitle = prompt('Edit Title:', post.title);
+                             if(newTitle) updatePost(post.id, {title: newTitle});
+                          }}>
+                            <Edit2 size={16} />
+                          </button>
+                          <button className="btn-icon delete-btn" onClick={() => deletePost(post.id)}>
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </li>
                 );

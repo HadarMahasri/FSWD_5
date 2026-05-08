@@ -34,7 +34,12 @@ const Layout = () => {
           </li>
           <li>
             <NavLink to="/posts" className={({isActive}) => isActive ? 'active' : ''}>
-              <FileText size={20} /> Posts
+              <FileText size={20} /> My Posts
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/all-posts" className={({isActive}) => isActive ? 'active' : ''}>
+              <FileText size={20} /> All Posts
             </NavLink>
           </li>
           <li>
