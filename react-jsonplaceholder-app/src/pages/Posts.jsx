@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Routes, Route, useNavigate, useParams, useLocation, useMatch } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Routes, Route, useNavigate, useParams, useLocation} from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../utils/api';
 import { Trash2, Edit2, Plus, MessageSquare } from 'lucide-react';
@@ -19,14 +19,16 @@ const PostDetail = ({ posts, updatePost }) => {
   const detailRef = useRef(null);
 
   useEffect(() => {
-    // Reset comments view when selecting a different post
-    setShowComments(false);
-    setComments([]);
-
     // On mobile, scroll to the details section when a post is selected
     if (detailRef.current && window.innerWidth < 900) {
       detailRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    
+    // Reset comments view when selecting a different post
+    return () => {
+      setShowComments(false);
+      setComments([]);
+    };
   }, [selectedPost?.id]);
 
   const handleToggleComments = () => {
@@ -170,20 +172,25 @@ const Posts = ({ mode = 'my' }) => {
   const [newPost, setNewPost] = useState({ title: '', body: '' });
 
   useEffect(() => {
+    
+    const fetchPosts = async () => {
+      try {
+        const url = mode === 'all' 
+          ? 'http://localhost:5000/posts' 
+          : `http://localhost:5000/posts?userId=${user.id}`;
+        
+        const data = await apiFetch(url);
+        setPosts(data);
+      } catch (error) { 
+        console.error(error); 
+      } finally { 
+        setLoading(false); 
+      }
+    };
+
+    
     fetchPosts();
   }, [user.id, mode]);
-
-  const fetchPosts = async () => {
-    try {
-      setLoading(true);
-      const url = mode === 'all' 
-        ? 'http://localhost:5000/posts' 
-        : `http://localhost:5000/posts?userId=${user.id}`;
-      const data = await apiFetch(url);
-      setPosts(data);
-    } catch (error) { console.error(error); } 
-    finally { setLoading(false); }
-  };
 
   const handleAddPost = async (e) => {
     e.preventDefault();

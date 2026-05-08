@@ -19,7 +19,7 @@ const Layout = () => {
       <nav className="sidebar">
         <div className="sidebar-header">
           <h2>Task Gallery</h2>
-          <p className="user-greeting">Welcome, {user?.name}</p>
+          <p className="user-greeting">Your user ID : {user?.id}</p>
         </div>
         <ul className="nav-links">
           <li>
@@ -48,7 +48,7 @@ const Layout = () => {
             </NavLink>
           </li>
           <li>
-            <button onClick={() => setShowInfo(true)} className="nav-link-btn" style={{ marginTop: '37px'}}>
+            <button onClick={() => setShowInfo(true)} className="nav-link-btn" style={{ marginTop: '0.8rem'}}>
               <User size={20} /> Info
             </button>
           </li>
