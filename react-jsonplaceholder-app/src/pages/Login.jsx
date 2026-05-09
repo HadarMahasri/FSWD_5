@@ -24,7 +24,7 @@ const Login = () => {
 
     const res = await login(username, website);
     if (res.success) {
-      navigate('/home');
+      navigate(`/users/${res.user.id}/home`);
     } else {
       setError(res.message);
     }

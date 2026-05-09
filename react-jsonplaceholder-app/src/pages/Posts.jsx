@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, useParams, useLocation} from 'react-router-
 import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../utils/api';
 import { Trash2, Edit2, Plus, MessageSquare } from 'lucide-react';
+import EditModal from '../components/EditModal';
 import './Posts.css';
 
 const PostDetail = ({ posts, updatePost }) => {
@@ -16,6 +17,7 @@ const PostDetail = ({ posts, updatePost }) => {
   const [loadingComments, setLoadingComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [showComments, setShowComments] = useState(false);
+  const [editModal, setEditModal] = useState({ isOpen: false, title: '', initialValue: '', isTextarea: false, onSave: null });
   const detailRef = useRef(null);
 
   useEffect(() => {
@@ -98,8 +100,13 @@ const PostDetail = ({ posts, updatePost }) => {
           <p style={{whiteSpace: 'pre-wrap'}}>{selectedPost.body}</p>
           {selectedPost.userId === user.id && (
             <button className="btn-icon" style={{position: 'absolute', top: 0, right: 0}} onClick={() => {
-              const newBody = prompt('Edit content:', selectedPost.body);
-              if (newBody) updatePost(selectedPost.id, {body: newBody});
+              setEditModal({
+                isOpen: true,
+                title: 'Edit Post Content',
+                initialValue: selectedPost.body,
+                isTextarea: true,
+                onSave: (newBody) => updatePost(selectedPost.id, {body: newBody})
+              });
             }}><Edit2 size={16}/></button>
           )}
         </div>
@@ -130,8 +137,13 @@ const PostDetail = ({ posts, updatePost }) => {
                     {c.email === user.email && (
                       <div className="comment-actions">
                         <button className="btn-icon" onClick={() => {
-                          const newBody = prompt('Edit comment:', c.body);
-                          if (newBody) updateComment(c.id, newBody);
+                          setEditModal({
+                            isOpen: true,
+                            title: 'Edit Comment',
+                            initialValue: c.body,
+                            isTextarea: true,
+                            onSave: (newBody) => updateComment(c.id, newBody)
+                          });
                         }}>
                           <Edit2 size={14} />
                         </button>
@@ -157,6 +169,14 @@ const PostDetail = ({ posts, updatePost }) => {
           </>
         )}
       </div>
+      <EditModal 
+        isOpen={editModal.isOpen} 
+        onClose={() => setEditModal({ ...editModal, isOpen: false })}
+        title={editModal.title}
+        initialValue={editModal.initialValue}
+        isTextarea={editModal.isTextarea}
+        onSave={editModal.onSave}
+      />
     </div>
   );
 };
@@ -168,7 +188,7 @@ const Posts = ({ mode = 'my' }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  
+  const [editModal, setEditModal] = useState({ isOpen: false, title: '', initialValue: '', isTextarea: false, onSave: null });
   const [newPost, setNewPost] = useState({ title: '', body: '' });
 
   useEffect(() => {
@@ -210,8 +230,8 @@ const Posts = ({ mode = 'my' }) => {
     try {
       await apiFetch(`http://localhost:5000/posts/${id}`, { method: 'DELETE' });
       setPosts(posts.filter(p => p.id !== id));
-      if (location.pathname.includes(`/posts/${id}/comments`)) {
-        navigate('/posts');
+      if (location.pathname.includes(`/${id}/comments`)) {
+        navigate(`/users/${user.id}/${mode === 'all' ? 'all-posts' : 'posts'}`);
       }
     } catch (err) { console.error(err); }
   };
@@ -231,9 +251,7 @@ const Posts = ({ mode = 'my' }) => {
     p.title.toLowerCase().includes(search.toLowerCase()) || 
     p.id.toString().includes(search)
   );
-
-  const basePath = mode === 'all' ? '/all-posts' : '/posts';
-
+  const basePath = `/users/${user.id}/${mode === 'all' ? 'all-posts' : 'posts'}`;
   return (
     <div className="posts-page">
       <div className="page-header">
@@ -300,8 +318,13 @@ const Posts = ({ mode = 'my' }) => {
                       {post.userId === user.id && (
                         <>
                           <button className="btn-icon" onClick={() => {
-                             const newTitle = prompt('Edit Title:', post.title);
-                             if(newTitle) updatePost(post.id, {title: newTitle});
+                             setEditModal({
+                               isOpen: true,
+                               title: 'Edit Post Title',
+                               initialValue: post.title,
+                               isTextarea: false,
+                               onSave: (newTitle) => updatePost(post.id, {title: newTitle})
+                             });
                           }}>
                             <Edit2 size={16} />
                           </button>
@@ -322,6 +345,14 @@ const Posts = ({ mode = 'my' }) => {
           <Route path=":postId/comments" element={<PostDetail posts={posts} updatePost={updatePost} />} />
         </Routes>
       </div>
+      <EditModal 
+        isOpen={editModal.isOpen} 
+        onClose={() => setEditModal({ ...editModal, isOpen: false })}
+        title={editModal.title}
+        initialValue={editModal.initialValue}
+        isTextarea={editModal.isTextarea}
+        onSave={editModal.onSave}
+      />
     </div>
   );
 };

@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
         const loggedInUser = users[0];
         setUser(loggedInUser);
         localStorage.setItem('user', JSON.stringify(loggedInUser));
-        return { success: true };
+        return { success: true, user: loggedInUser };
       } else {
         return { success: false, message: 'Invalid username or password' };
       }
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
       
       setUser(newUser);
       localStorage.setItem('user', JSON.stringify(newUser));
-      return { success: true };
+      return { success: true, user: newUser };
     } catch {
       return { success: false, message: 'Server connection failed' };
     }

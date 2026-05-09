@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, useParams, useLocation } from 'react-router
 import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../utils/api';
 import { Trash2, Edit2, Plus, Image as ImageIcon } from 'lucide-react';
+import EditModal from '../components/EditModal';
 import './Albums.css';
 
 const AlbumsList = () => {
@@ -95,6 +96,7 @@ const AlbumDetail = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [newPhoto, setNewPhoto] = useState({ title: '', url: '' });
+  const [editModal, setEditModal] = useState({ isOpen: false, title: '', initialValue: '', isTextarea: false, onSave: null });
 
   useEffect(() => {
     if (!album) {
@@ -112,7 +114,7 @@ const AlbumDetail = () => {
   const fetchPhotos = async (id, pageNum) => {
     try {
       setLoadingPhotos(true);
-      const data = await apiFetch(`http://localhost:5000/photos?albumId=${id}&_page=${pageNum}&_per_page=12`);
+      const data = await apiFetch(`http://localhost:5000/photos?albumId=${id}&_page=${pageNum}&_limit=12`);
 
       // json-server v1 pagination returns { data: [], items: ... }
       const fetchedPhotos = Array.isArray(data) ? data : (data.data || []);
@@ -203,8 +205,13 @@ const AlbumDetail = () => {
               <p>{photo.title}</p>
               <div className="photo-actions">
                 <button className="btn-icon" onClick={() => {
-                  const newTitle = prompt("Edit photo title:", photo.title);
-                  if (newTitle) updatePhoto(photo.id, newTitle);
+                  setEditModal({
+                    isOpen: true,
+                    title: 'Edit Photo Title',
+                    initialValue: photo.title,
+                    isTextarea: false,
+                    onSave: (newTitle) => updatePhoto(photo.id, newTitle)
+                  });
                 }}><Edit2 size={14} /></button>
                 <button className="btn-icon delete-btn" onClick={() => deletePhoto(photo.id)}>
                   <Trash2 size={14} />
@@ -224,6 +231,14 @@ const AlbumDetail = () => {
           </button>
         </div>
       )}
+      <EditModal 
+        isOpen={editModal.isOpen} 
+        onClose={() => setEditModal({ ...editModal, isOpen: false })}
+        title={editModal.title}
+        initialValue={editModal.initialValue}
+        isTextarea={editModal.isTextarea}
+        onSave={editModal.onSave}
+      />
     </div>
   );
 };

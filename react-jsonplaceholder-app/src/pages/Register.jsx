@@ -62,7 +62,7 @@ const Register = () => {
     const res = await register(dataToSave);
     
     if (res.success) {
-      navigate('/home');
+      navigate(`/users/${res.user.id}/home`);
     } else {
       setError(res.message);
       setLoading(false);

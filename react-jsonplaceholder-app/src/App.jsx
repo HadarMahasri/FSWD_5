@@ -18,19 +18,22 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function AppRoutes() {
+  const { user } = useAuth();
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/home" replace />} />
+      <Route path="/" element={<Navigate to={user ? `/users/${user.id}/home` : "/login"} replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       
       <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-        <Route path="home" element={<Home />} />
-        <Route path="todos" element={<Todos />} />
-        <Route path="posts/*" element={<Posts mode="my" />} />
-        <Route path="all-posts/*" element={<Posts mode="all" />} />
-        <Route path="albums/*" element={<Albums />} />
+        <Route path="users/:userId/home" element={<Home />} />
+        <Route path="users/:userId/todos" element={<Todos />} />
+        <Route path="users/:userId/posts/*" element={<Posts mode="my" />} />
+        <Route path="users/:userId/all-posts/*" element={<Posts mode="all" />} />
+        <Route path="users/:userId/albums/*" element={<Albums />} />
       </Route>
+      
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

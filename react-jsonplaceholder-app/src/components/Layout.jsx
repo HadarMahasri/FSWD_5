@@ -23,27 +23,27 @@ const Layout = () => {
         </div>
         <ul className="nav-links">
           <li>
-            <NavLink to="/home" className={({isActive}) => isActive ? 'active' : ''}>
+            <NavLink to={`/users/${user.id}/home`} className={({isActive}) => isActive ? 'active' : ''}>
               <HomeIcon size={20} /> Home
             </NavLink>
           </li>
           <li>
-            <NavLink to="/todos" className={({isActive}) => isActive ? 'active' : ''}>
+            <NavLink to={`/users/${user.id}/todos`} className={({isActive}) => isActive ? 'active' : ''}>
               <ListTodo size={20} /> Todos
             </NavLink>
           </li>
           <li>
-            <NavLink to="/posts" className={({isActive}) => isActive ? 'active' : ''}>
+            <NavLink to={`/users/${user.id}/posts`} className={({isActive}) => isActive ? 'active' : ''}>
               <FileText size={20} /> My Posts
             </NavLink>
           </li>
           <li>
-            <NavLink to="/all-posts" className={({isActive}) => isActive ? 'active' : ''}>
+            <NavLink to={`/users/${user.id}/all-posts`} className={({isActive}) => isActive ? 'active' : ''}>
               <FileText size={20} /> All Posts
             </NavLink>
           </li>
           <li>
-            <NavLink to="/albums" className={({isActive}) => isActive ? 'active' : ''}>
+            <NavLink to={`/users/${user.id}/albums`} className={({isActive}) => isActive ? 'active' : ''}>
               <ImageIcon size={20} /> Albums
             </NavLink>
           </li>
