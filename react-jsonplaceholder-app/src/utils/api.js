@@ -7,6 +7,17 @@ export const apiFetch = async (url, options = {}) => {
     if (cache.has(url)) {
       return cache.get(url);
     }
+    // const fetchPromise = fetch(url, options)
+    //   .then(res => {
+    //     if (!res.ok) throw new Error('API Error');
+    //     return res.json();
+    //   })
+    //   .catch(err => {
+    //     cache.delete(url);
+    //     throw err;
+    //   });
+    //   cache.set(url, fetchPromise);
+    //   return fetchPromise;
     const res = await fetch(url, options);
     if (!res.ok) throw new Error('API Error');
     const data = await res.json();

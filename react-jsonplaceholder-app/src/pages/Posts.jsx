@@ -199,8 +199,8 @@ const Posts = ({ mode = 'my' }) => {
     const fetchPosts = async () => {
       try {
         const url = mode === 'all'
-          ? 'http://localhost:5000/posts?_expand=user'
-          : `http://localhost:5000/posts?userId=${user.id}&_expand=user`;
+          ? 'http://localhost:5000/posts'
+          : `http://localhost:5000/posts?userId=${user.id}`;
 
         const data = await apiFetch(url);
         setPosts(data);
@@ -320,7 +320,6 @@ const Posts = ({ mode = 'my' }) => {
                     <div className="post-item-header">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
                         <span className="post-id" style={{ marginBottom: 0 }}>#{post.id}</span>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{post.user?.name || user.name}</span>
                       </div>
                       <h4 className="post-title" style={{ marginTop: 0 }}>{post.title}</h4>
                     </div>
