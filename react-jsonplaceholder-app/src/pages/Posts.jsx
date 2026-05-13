@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Routes, Route, useNavigate, useParams, useLocation} from 'react-router-dom';
+import { Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../utils/api';
 import { Trash2, Edit2, Plus, MessageSquare } from 'lucide-react';
@@ -10,9 +10,9 @@ const PostDetail = ({ posts, updatePost }) => {
   const { postId } = useParams();
   const { user } = useAuth();
   const location = useLocation();
-  
+
   const selectedPost = posts.find(p => p.id.toString() === postId) || location.state?.post;
-  
+
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -25,7 +25,7 @@ const PostDetail = ({ posts, updatePost }) => {
     if (detailRef.current && window.innerWidth < 900) {
       detailRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-    
+
     // Reset comments view when selecting a different post
     return () => {
       setShowComments(false);
@@ -43,9 +43,12 @@ const PostDetail = ({ posts, updatePost }) => {
   const fetchComments = async (id) => {
     try {
       setLoadingComments(true);
+      // const data = await apiFetch(`http://localhost:5000/comments`);
+      // setComments(data.filter(c => String(c.postId) === String(id)));
+
       const data = await apiFetch(`http://localhost:5000/comments?postId=${id}`);
       setComments(data);
-    } catch (err) { console.error(err); } 
+    } catch (err) { console.error(err); }
     finally { setLoadingComments(false); }
   };
 
@@ -87,53 +90,53 @@ const PostDetail = ({ posts, updatePost }) => {
     } catch (err) { console.error(err); }
   };
 
-  if (!selectedPost) return <div className="loader" style={{margin: '2rem auto'}}></div>;
+  if (!selectedPost) return <div className="loader" style={{ margin: '2rem auto' }}></div>;
 
   return (
     <div className="post-detail-section" ref={detailRef}>
-      <div className="card full-post" style={{marginBottom: '1.5rem'}}>
-        <h2 style={{color: 'var(--primary)', marginBottom: '0.5rem'}}>{selectedPost.title}</h2>
-        <div className="post-meta" style={{fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem'}}>
+      <div className="card full-post" style={{ marginBottom: '1.5rem' }}>
+        <h2 style={{ color: 'var(--primary)', marginBottom: '0.5rem' }}>{selectedPost.title}</h2>
+        <div className="post-meta" style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
           Post ID: #{selectedPost.id}
         </div>
-        <div className="post-body" style={{position: 'relative'}}>
-          <p style={{whiteSpace: 'pre-wrap'}}>{selectedPost.body}</p>
+        <div className="post-body" style={{ position: 'relative' }}>
+          <p style={{ whiteSpace: 'pre-wrap' }}>{selectedPost.body}</p>
           {selectedPost.userId === user.id && (
-            <button className="btn-icon" style={{position: 'absolute', top: 0, right: 0}} onClick={() => {
+            <button className="btn-icon" style={{ position: 'absolute', top: 0, right: 0 }} onClick={() => {
               setEditModal({
                 isOpen: true,
                 title: 'Edit Post Content',
                 initialValue: selectedPost.body,
                 isTextarea: true,
-                onSave: (newBody) => updatePost(selectedPost.id, {body: newBody})
+                onSave: (newBody) => updatePost(selectedPost.id, { body: newBody })
               });
-            }}><Edit2 size={16}/></button>
+            }}><Edit2 size={16} /></button>
           )}
         </div>
       </div>
 
       <div className="card comments-section">
-        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem'}}>
-          <h3 style={{display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0}}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
             <MessageSquare size={20} /> Comments
           </h3>
-          <button className="btn btn-primary" onClick={handleToggleComments} style={{padding: '0.4rem 0.8rem', fontSize: '0.9rem'}}>
+          <button className="btn btn-primary" onClick={handleToggleComments} style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}>
             {showComments ? 'Hide Comments' : 'Show Comments'}
           </button>
         </div>
-        
+
         {showComments && (
           <>
-            {loadingComments ? <div className="loader" style={{margin: '1rem auto'}}></div> : (
+            {loadingComments ? <div className="loader" style={{ margin: '1rem auto' }}></div> : (
               <ul className="comments-list">
                 {comments.length === 0 ? <p className="empty-msg">No comments yet.</p> : null}
                 {comments.map(c => (
                   <li key={c.id} className="comment-item">
                     <div className="comment-header">
-                      <strong>{c.name}</strong> <span style={{color: 'var(--text-muted)', fontSize: '0.8rem'}}>({c.email})</span>
+                      <strong>{c.name}</strong> <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>({c.email})</span>
                     </div>
                     <p className="comment-body">{c.body}</p>
-                    
+
                     {c.email === user.email && (
                       <div className="comment-actions">
                         <button className="btn-icon" onClick={() => {
@@ -158,9 +161,9 @@ const PostDetail = ({ posts, updatePost }) => {
             )}
 
             <form onSubmit={handleAddComment} className="add-comment-form">
-              <input 
-                type="text" 
-                placeholder="Write a comment..." 
+              <input
+                type="text"
+                placeholder="Write a comment..."
                 value={newComment}
                 onChange={e => setNewComment(e.target.value)}
               />
@@ -169,8 +172,8 @@ const PostDetail = ({ posts, updatePost }) => {
           </>
         )}
       </div>
-      <EditModal 
-        isOpen={editModal.isOpen} 
+      <EditModal
+        isOpen={editModal.isOpen}
         onClose={() => setEditModal({ ...editModal, isOpen: false })}
         title={editModal.title}
         initialValue={editModal.initialValue}
@@ -192,23 +195,23 @@ const Posts = ({ mode = 'my' }) => {
   const [newPost, setNewPost] = useState({ title: '', body: '' });
 
   useEffect(() => {
-    
+
     const fetchPosts = async () => {
       try {
-        const url = mode === 'all' 
-          ? 'http://localhost:5000/posts?_expand=user' 
+        const url = mode === 'all'
+          ? 'http://localhost:5000/posts?_expand=user'
           : `http://localhost:5000/posts?userId=${user.id}&_expand=user`;
-        
+
         const data = await apiFetch(url);
         setPosts(data);
-      } catch (error) { 
-        console.error(error); 
-      } finally { 
-        setLoading(false); 
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    
+
     fetchPosts();
   }, [user.id, mode]);
 
@@ -247,8 +250,8 @@ const Posts = ({ mode = 'my' }) => {
     } catch (err) { console.error(err); }
   };
 
-  const filteredPosts = posts.filter(p => 
-    p.title.toLowerCase().includes(search.toLowerCase()) || 
+  const filteredPosts = posts.filter(p =>
+    p.title.toLowerCase().includes(search.toLowerCase()) ||
     p.id.toString().includes(search)
   );
   const basePath = `/users/${user.id}/${mode === 'all' ? 'all-posts' : 'posts'}`;
@@ -265,18 +268,18 @@ const Posts = ({ mode = 'my' }) => {
               <h3>Add New Post</h3>
               <form onSubmit={handleAddPost}>
                 <div className="input-group">
-                  <input 
-                    type="text" 
-                    placeholder="Post Title" 
-                    value={newPost.title} 
-                    onChange={e => setNewPost({...newPost, title: e.target.value})} 
+                  <input
+                    type="text"
+                    placeholder="Post Title"
+                    value={newPost.title}
+                    onChange={e => setNewPost({ ...newPost, title: e.target.value })}
                   />
                 </div>
                 <div className="input-group">
-                  <textarea 
-                    placeholder="Post Content" 
+                  <textarea
+                    placeholder="Post Content"
                     value={newPost.body}
-                    onChange={e => setNewPost({...newPost, body: e.target.value})}
+                    onChange={e => setNewPost({ ...newPost, body: e.target.value })}
                     rows={3}
                     className="post-textarea"
                   />
@@ -286,11 +289,11 @@ const Posts = ({ mode = 'my' }) => {
             </div>
           )}
 
-          <div className="card search-card" style={{marginBottom: '1.5rem'}}>
-            <div className="input-group" style={{marginBottom: 0}}>
-              <input 
-                type="text" 
-                placeholder="Search posts by ID or Title..." 
+          <div className="card search-card" style={{ marginBottom: '1.5rem' }}>
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <input
+                type="text"
+                placeholder="Search posts by ID or Title..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -302,29 +305,29 @@ const Posts = ({ mode = 'my' }) => {
               {filteredPosts.map(post => {
                 const isSelected = location.pathname.includes(`/posts/${post.id}/comments`);
                 return (
-                  <li 
-                    key={post.id} 
+                  <li
+                    key={post.id}
                     className={`card post-item ${isSelected ? 'selected' : ''}`}
                     onClick={() => navigate(`${basePath}/${post.id}/comments`, { state: { post } })}
                   >
                     <div className="post-item-header">
-                      <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem'}}>
-                        <span className="post-id" style={{marginBottom: 0}}>#{post.id}</span>
-                        <span style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>{post.user?.name || user.name}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                        <span className="post-id" style={{ marginBottom: 0 }}>#{post.id}</span>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{post.user?.name || user.name}</span>
                       </div>
-                      <h4 className="post-title" style={{marginTop: 0}}>{post.title}</h4>
+                      <h4 className="post-title" style={{ marginTop: 0 }}>{post.title}</h4>
                     </div>
                     <div className="post-actions" onClick={e => e.stopPropagation()}>
                       {post.userId === user.id && (
                         <>
                           <button className="btn-icon" onClick={() => {
-                             setEditModal({
-                               isOpen: true,
-                               title: 'Edit Post Title',
-                               initialValue: post.title,
-                               isTextarea: false,
-                               onSave: (newTitle) => updatePost(post.id, {title: newTitle})
-                             });
+                            setEditModal({
+                              isOpen: true,
+                              title: 'Edit Post Title',
+                              initialValue: post.title,
+                              isTextarea: false,
+                              onSave: (newTitle) => updatePost(post.id, { title: newTitle })
+                            });
                           }}>
                             <Edit2 size={16} />
                           </button>
@@ -345,8 +348,8 @@ const Posts = ({ mode = 'my' }) => {
           <Route path=":postId/comments" element={<PostDetail posts={posts} updatePost={updatePost} />} />
         </Routes>
       </div>
-      <EditModal 
-        isOpen={editModal.isOpen} 
+      <EditModal
+        isOpen={editModal.isOpen}
         onClose={() => setEditModal({ ...editModal, isOpen: false })}
         title={editModal.title}
         initialValue={editModal.initialValue}

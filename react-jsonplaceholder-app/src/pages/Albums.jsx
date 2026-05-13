@@ -101,9 +101,16 @@ const AlbumDetail = () => {
   useEffect(() => {
     if (!album) {
       // Fetch album if not passed via state (e.g. direct URL visit)
-      apiFetch(`http://localhost:5000/albums/${albumId}`)
-        .then(data => setAlbum(data))
-        .catch(err => console.error(err));
+      // Can't use await in useEffect directly, so define an async function inside
+      const fetchAlbum = async () => {
+        try {
+          const data = await apiFetch(`http://localhost:5000/albums/${albumId}`);
+          setAlbum(data);
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      fetchAlbum();
     }
     setPhotos([]);
     setPage(1);
