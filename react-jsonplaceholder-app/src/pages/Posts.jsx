@@ -231,6 +231,13 @@ const Posts = ({ mode = 'my' }) => {
 
   const deletePost = async (id) => {
     try {
+      // 1. Delete all comments associated with this post first
+      const commentsToDelete = await apiFetch(`http://localhost:5000/comments?postId=${id}`);
+      for (const comment of commentsToDelete) {
+        await apiFetch(`http://localhost:5000/comments/${comment.id}`, { method: 'DELETE' });
+      }
+
+      // 2. Delete the post itself
       await apiFetch(`http://localhost:5000/posts/${id}`, { method: 'DELETE' });
       setPosts(posts.filter(p => p.id !== id));
       if (location.pathname.includes(`/${id}/comments`)) {

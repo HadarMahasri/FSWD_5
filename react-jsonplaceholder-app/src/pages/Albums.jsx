@@ -41,6 +41,21 @@ const AlbumsList = () => {
     } catch (err) { console.error(err); }
   };
 
+  const deleteAlbum = async (e, id) => {
+    e.stopPropagation(); // prevent navigation
+    try {
+      // 1. Fetch and delete all photos in this album
+      const photosToDelete = await apiFetch(`http://localhost:5000/photos?albumId=${id}`);
+      for (const photo of photosToDelete) {
+        await apiFetch(`http://localhost:5000/photos/${photo.id}`, { method: 'DELETE' });
+      }
+
+      // 2. Delete the album itself
+      await apiFetch(`http://localhost:5000/albums/${id}`, { method: 'DELETE' });
+      setAlbums(albums.filter(a => a.id !== id));
+    } catch (err) { console.error(err); }
+  };
+
   const filteredAlbums = albums.filter(a =>
     a.title.toLowerCase().includes(search.toLowerCase()) ||
     a.id.toString().includes(search)
@@ -74,10 +89,17 @@ const AlbumsList = () => {
       {loading ? <div className="loader"></div> : (
         <div className="albums-grid">
           {filteredAlbums.map(album => (
-            <div key={album.id} className="card album-card" onClick={() => navigate(`${album.id}/photos`, { state: { album } })}>
+            <div key={album.id} className="card album-card" onClick={() => navigate(`${album.id}/photos`, { state: { album } })} style={{ position: 'relative' }}>
               <div className="album-icon"><ImageIcon size={40} color="var(--primary)" /></div>
               <h4>{album.title}</h4>
               <span className="album-id">#{album.id}</span>
+              <button 
+                className="btn-icon delete-btn" 
+                style={{ position: 'absolute', top: '10px', right: '10px' }} 
+                onClick={(e) => deleteAlbum(e, album.id)}
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
           ))}
         </div>
