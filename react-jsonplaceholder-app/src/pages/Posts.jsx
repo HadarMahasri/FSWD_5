@@ -43,8 +43,8 @@ const PostDetail = ({ posts, updatePost }) => {
   const fetchComments = async (id) => {
     try {
       setLoadingComments(true);
-      const data = await apiFetch(`http://localhost:5000/comments`);
-      setComments(data.filter(c => String(c.postId) === String(id)));
+      const data = await apiFetch(`http://localhost:5000/comments?postId=${id}`);
+      setComments(data);
     } catch (err) { console.error(err); } 
     finally { setLoadingComments(false); }
   };
